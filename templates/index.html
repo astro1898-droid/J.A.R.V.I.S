@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,7 +19,7 @@
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
         body { background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        
+
         /* Top Bar */
         header {
             background: var(--panel); border-bottom: 1px solid var(--border);
@@ -27,14 +27,14 @@
         }
         .brand { display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 1.1rem; color: var(--accent); letter-spacing: 1px; }
         .pulse { width: 10px; height: 10px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981; }
-        
+
         .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         select, button {
             background: #1e293b; color: var(--text); border: 1px solid #334155;
             padding: 8px 12px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; outline: none;
         }
         select:focus, button:hover { border-color: var(--accent); box-shadow: 0 0 8px var(--accent-glow); }
-        
+
         /* Devices Bar */
         .telemetry-bar {
             background: #0b1120; border-bottom: 1px solid var(--border);
@@ -50,10 +50,10 @@
         /* Chat Area */
         #chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
         .msg { max-width: 85%; padding: 14px 18px; border-radius: 14px; line-height: 1.6; font-size: 0.95rem; position: relative; }
-        .msg.user { align-self: flex-start; background: #1d4ed8; color: #fff; border-bottom-right-radius: 2px; }
-        .msg.ai { align-self: flex-end; background: var(--panel); border: 1px solid var(--border); border-bottom-left-radius: 2px; width: 85%; }
-        .msg-meta { font-size: 0.75rem; color: var(--accent); margin-bottom: 6px; display: flex; justify-content: space-between; }
-        
+        .msg.user { align-self: flex-end; background: #1d4ed8; color: #fff; border-bottom-right-radius: 2px; }
+        .msg.ai { align-self: flex-start; background: var(--panel); border: 1px solid var(--border); border-bottom-left-radius: 2px; width: 85%; }
+        .msg-meta { font-size: 0.75rem; color: var(--accent); margin-bottom: 6px; display: flex; justify-content: space-between; gap: 12px; }
+
         /* Code blocks */
         pre { direction: ltr; text-align: left; background: #090d16 !important; padding: 12px; border-radius: 8px; overflow-x: auto; margin: 10px 0; border: 1px solid #1e293b; position: relative; }
         code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.88rem; }
@@ -87,25 +87,25 @@
             <option value="{{ key }}">{{ m.name }}</option>
             {% endfor %}
         </select>
-        <button class="continue-btn" onclick="continueCode()" title="لو الكود طويل ووقف كمله">⏩ كمل الكود</button>
-        <button onclick="clearChat()">🗑️ مسح</button>
+        <button class="continue-btn" onclick="continueCode()" title="Continue generating if code cut off">⏩ Continue Code</button>
+        <button onclick="clearChat()">🗑️ Clear</button>
     </div>
 </header>
 
 <div class="telemetry-bar" id="telemetry-bar">
-    <div class="device-pill"><span class="dot-online"></span> جاري تحميل حالة الأجهزة...</div>
+    <div class="device-pill"><span class="dot-online"></span> Loading device status...</div>
 </div>
 
 <div id="chat-box">
     <div class="msg ai">
-        <div class="msg-meta"><span>J.A.R.V.I.S. System</span><span>Online 24/7</span></div>
-        أهلاً يا زيزو! السيرفر السحابي شغال وجاهز. اختار المخ اللي تحبه من فوق (أو سيبها على <b>Auto-Router</b>) وقولي نبدأ في إيه؟
+        <div class="msg-meta"><span>J.A.R.V.I.S. System</span><span>Online</span></div>
+        Welcome back! Cloud server is online and ready. Pick a model above (or keep <b>Auto-Router</b>) and tell me what we're building.
     </div>
 </div>
 
 <div class="input-area">
-    <textarea id="prompt-input" placeholder="اكتب أمرك أو اطلب مشروع برمجي كامل هنا... (Shift+Enter لسطر جديد)"></textarea>
-    <button class="send-btn" onclick="sendMessage()">إرسال ⚡</button>
+    <textarea id="prompt-input" placeholder="Type your command or request a full project... (Shift+Enter for new line)"></textarea>
+    <button class="send-btn" onclick="sendMessage()">Send ⚡</button>
 </div>
 
 <script>
@@ -113,7 +113,6 @@
     const chatBox = document.getElementById("chat-box");
     const promptInput = document.getElementById("prompt-input");
 
-    // تحديث حالة الأجهزة كل 15 ثانية
     async function fetchTelemetry() {
         try {
             const res = await fetch("/api/telemetry");
@@ -142,11 +141,11 @@
                 hljs.highlightElement(pre.querySelector("code"));
                 const btn = document.createElement("button");
                 btn.className = "copy-btn";
-                btn.innerText = "نسخ الكود";
+                btn.innerText = "Copy Code";
                 btn.onclick = () => {
                     navigator.clipboard.writeText(pre.querySelector("code").innerText);
-                    btn.innerText = "تم النسخ ✓";
-                    setTimeout(() => btn.innerText = "نسخ الكود", 2000);
+                    btn.innerText = "Copied ✓";
+                    setTimeout(() => btn.innerText = "Copy Code", 2000);
                 };
                 pre.appendChild(btn);
             });
@@ -164,7 +163,7 @@
 
         if (!customText) promptInput.value = "";
         appendMessage("user", text);
-        const loadingDiv = appendMessage("ai", "⏳ جاري المعالجة على السحابة...", "J.A.R.V.I.S. Thinking");
+        const loadingDiv = appendMessage("ai", "⏳ Processing on cloud...", "J.A.R.V.I.S. Thinking");
 
         const model = document.getElementById("model-select").value;
         try {
@@ -185,12 +184,12 @@
             }
         } catch (err) {
             loadingDiv.remove();
-            appendMessage("ai", "❌ تعذر الاتصال بالسيرفر.", "Network Error");
+            appendMessage("ai", "❌ Failed to reach server.", "Network Error");
         }
     }
 
     function continueCode() {
-        sendMessage("كمل باقي الكود من أول السطر اللي وقفت عنده بالظبط بدون إعادة ما سبق.");
+        sendMessage("Continue the code from the exact line you stopped at without repeating what was already written.");
     }
 
     function clearChat() {
