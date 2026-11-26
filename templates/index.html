@@ -393,6 +393,70 @@
                 box-shadow: 12px 0 30px rgba(0, 0, 0, 0.6);
             }
         }
+        @media (max-width: 600px) {
+            header {
+                padding: 9px 12px;
+                gap: 8px;
+            }
+            .brand {
+                font-size: 0.92rem;
+            }
+            .controls {
+                width: 100%;
+                gap: 6px;
+            }
+            .controls select {
+                flex: 1 1 100%;
+                padding: 7px 10px;
+                font-size: 0.8rem;
+            }
+            .controls button {
+                flex: 1;
+                padding: 6px 8px;
+                font-size: 0.76rem;
+                white-space: nowrap;
+            }
+            .telemetry-bar {
+                padding: 8px 12px;
+                gap: 6px;
+                flex-wrap: wrap;
+                overflow-x: visible;
+            }
+            .device-pill {
+                flex: 1 1 calc(50% - 6px);
+                min-width: 145px;
+                padding: 5px 9px;
+                font-size: 0.72rem;
+                white-space: normal;
+                line-height: 1.35;
+            }
+            #chat-box {
+                padding: 12px;
+                gap: 12px;
+            }
+            .msg, .msg.ai {
+                max-width: 100%;
+                width: 100%;
+                padding: 12px 14px;
+                font-size: 0.9rem;
+            }
+            .quick-bar {
+                padding: 0 12px 8px;
+                gap: 6px;
+            }
+            .chip {
+                padding: 4px 9px;
+                font-size: 0.72rem;
+            }
+            .input-area {
+                padding: 9px 12px 12px;
+                gap: 8px;
+            }
+            .send-btn {
+                padding: 11px 14px;
+                font-size: 0.85rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -491,6 +555,21 @@
         return /[\u0600-\u06FF]/.test(text || "");
     }
 
+    function formatNetwork(rawNet) {
+        if (!rawNet) return "Connected";
+        let clean = String(rawNet)
+            .replace(/\[connection_type\]/gi, "")
+            .replace(/\[wifi_ssid\]/gi, "")
+            .replace(/\{cell_connection_type\}/gi, "")
+            .replace(/\{ssid\}/gi, "")
+            .replace(/\(\s*\)/g, "")
+            .replace(/\(\s*$/g, "")
+            .replace(/^\s*\)/g, "")
+            .replace(/\s{2,}/g, " ")
+            .trim();
+        return clean || "Connected";
+    }
+
     function updateDash() {
         const sel = document.getElementById("model-select");
         const activeLabel = sel.options[sel.selectedIndex]?.text || sel.value;
@@ -571,15 +650,14 @@
             deviceCount = entries.length;
             for (const [device, info] of entries) {
                 const dotClass = info.status === "online" ? "dot-online" : "dot-standby";
+                const netLabel = formatNetwork(info.network);
                 bar.innerHTML += `
                     <div class="device-pill">
                         <span class="${dotClass}"></span>
-                        <strong>${device}</strong>
-                        <span>🔋 ${info.battery}</span>
-                        <span>•</span>
-                        <span>📶 ${info.network}</span>
-                        <span>•</span>
-                        <span>${info.last_seen}</span>
+                        <div>
+                            <div><strong>${device}</strong> • 🔋 ${info.battery || "--%"}</div>
+                            <div style="color: var(--muted);">📶 ${netLabel} • ${info.last_seen || ""}</div>
+                        </div>
                     </div>`;
             }
             updateDash();
