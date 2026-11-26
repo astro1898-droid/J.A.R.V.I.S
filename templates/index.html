@@ -19,6 +19,7 @@
             --accent-soft: rgba(0, 240, 255, 0.14);
             --success: #10b981;
             --warn: #f59e0b;
+            --danger: #ef4444;
             --text: #f1f5f9;
             --muted: #94a3b8;
         }
@@ -217,22 +218,26 @@
             padding: 8px 18px;
             display: flex;
             gap: 9px;
-            overflow-x: auto;
+            flex-wrap: wrap;
             align-items: center;
         }
         .device-pill {
             background: var(--panel-solid);
             border: 1px solid var(--border);
-            padding: 4px 12px;
-            border-radius: 999px;
+            padding: 5px 12px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
-            gap: 7px;
+            gap: 8px;
             font-size: 0.76rem;
-            white-space: nowrap;
         }
-        .dot-online { width: 7px; height: 7px; border-radius: 50%; background: var(--success); box-shadow: 0 0 6px var(--success); }
-        .dot-standby { width: 7px; height: 7px; border-radius: 50%; background: var(--warn); }
+        .device-pill.offline {
+            opacity: 0.65;
+            border-color: rgba(239, 68, 68, 0.35);
+        }
+        .dot-online { width: 7px; height: 7px; border-radius: 50%; background: var(--success); box-shadow: 0 0 6px var(--success); flex-shrink: 0; }
+        .dot-standby { width: 7px; height: 7px; border-radius: 50%; background: var(--warn); flex-shrink: 0; }
+        .dot-offline { width: 7px; height: 7px; border-radius: 50%; background: var(--danger); flex-shrink: 0; }
 
         /* Chat Stream */
         #chat-box {
@@ -427,7 +432,6 @@
                 min-width: 145px;
                 padding: 5px 9px;
                 font-size: 0.72rem;
-                white-space: normal;
                 line-height: 1.35;
             }
             #chat-box {
@@ -520,6 +524,8 @@
 
 <script>
     const STORAGE_KEY = "jarvis_v22_sessions";
+    const OFFLINE_AFTER_MINUTES = 1;
+
     let sessions = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
     let activeSessionId = null;
     let deviceCount = 0;
@@ -568,6 +574,36 @@
             .replace(/\s{2,}/g, " ")
             .trim();
         return clean || "Connected";
+    }
+
+    function isDeviceOffline(lastSeenText) {
+        if (!lastSeenText) return false;
+        const raw = String(lastSeenText).trim();
+
+        const parsedDate = Date.parse(raw);
+        if (!Number.isNaN(parsedDate)) {
+            return ((Date.now() - parsedDate) / 60000) > OFFLINE_AFTER_MINUTES;
+        }
+
+        const match = raw.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?$/i);
+        if (!match) return false;
+
+        let hours = parseInt(match[1], 10);
+        const minutes = parseInt(match[2], 10);
+        const seconds = match[3] ? parseInt(match[3], 10) : 0;
+        const meridiem = (match[4] || "").toUpperCase();
+
+        if (meridiem === "PM" && hours < 12) hours += 12;
+        if (meridiem === "AM" && hours === 12) hours = 0;
+
+        const now = new Date();
+        const candidate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, seconds);
+        if (candidate.getTime() - now.getTime() > 60000) {
+            candidate.setDate(candidate.getDate() - 1);
+        }
+
+        const diffMinutes = (now.getTime() - candidate.getTime()) / 60000;
+        return diffMinutes > OFFLINE_AFTER_MINUTES;
     }
 
     function updateDash() {
@@ -648,15 +684,22 @@
             bar.innerHTML = "";
             const entries = Object.entries(data || {});
             deviceCount = entries.length;
+
             for (const [device, info] of entries) {
-                const dotClass = info.status === "online" ? "dot-online" : "dot-standby";
-                const netLabel = formatNetwork(info.network);
+                const offline = isDeviceOffline(info.last_seen);
+                const dotClass = offline
+                    ? "dot-offline"
+                    : (info.status === "online" ? "dot-online" : "dot-standby");
+                const statusText = offline
+                    ? "Offline (Waiting MacroDroid)"
+                    : formatNetwork(info.network);
+
                 bar.innerHTML += `
-                    <div class="device-pill">
+                    <div class="device-pill ${offline ? "offline" : ""}">
                         <span class="${dotClass}"></span>
                         <div>
                             <div><strong>${device}</strong> • 🔋 ${info.battery || "--%"}</div>
-                            <div style="color: var(--muted);">📶 ${netLabel} • ${info.last_seen || ""}</div>
+                            <div style="color: var(--muted);">📶 ${statusText} • ${info.last_seen || ""}</div>
                         </div>
                     </div>`;
             }
