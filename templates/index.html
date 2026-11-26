@@ -3,108 +3,348 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>J.A.R.V.I.S. Cloud Neural Hub</title>
+    <title>J.A.R.V.I.S. Cloud Command Deck</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
         :root {
-            --bg: #070b14;
-            --panel: #0f172a;
-            --border: #1e293b;
+            --bg: #050811;
+            --bg-grad: radial-gradient(circle at 15% 10%, rgba(0, 240, 255, 0.08), transparent 40%),
+                       radial-gradient(circle at 85% 20%, rgba(59, 130, 246, 0.08), transparent 45%);
+            --panel: rgba(13, 20, 36, 0.88);
+            --panel-solid: #0d1424;
+            --border: rgba(148, 163, 184, 0.16);
             --accent: #00f0ff;
-            --accent-glow: rgba(0, 240, 255, 0.2);
-            --text: #e2e8f0;
+            --accent-soft: rgba(0, 240, 255, 0.14);
+            --success: #10b981;
+            --warn: #f59e0b;
+            --text: #f1f5f9;
             --muted: #94a3b8;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
-        body { background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--bg);
+            background-image: var(--bg-grad);
+            color: var(--text);
+            font-family: 'Segoe UI', system-ui, -apple-system, Tahoma, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
 
-        /* Top Bar */
+        /* Header */
         header {
-            background: var(--panel); border-bottom: 1px solid var(--border);
-            padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+            background: var(--panel);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
         }
-        .brand { display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 1.1rem; color: var(--accent); letter-spacing: 1px; }
-        .pulse { width: 10px; height: 10px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981; }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 1.05rem;
+            letter-spacing: 0.8px;
+            color: var(--accent);
+        }
+        .pulse {
+            width: 9px;
+            height: 9px;
+            background: var(--success);
+            border-radius: 50%;
+            box-shadow: 0 0 12px var(--success);
+            animation: pulseAnim 2s infinite;
+        }
+        @keyframes pulseAnim {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.25); opacity: 0.7; }
+        }
+        .ver-badge {
+            font-size: 0.72rem;
+            color: var(--muted);
+            border: 1px solid var(--border);
+            padding: 2px 8px;
+            border-radius: 999px;
+            letter-spacing: 0.4px;
+        }
 
-        .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
         select, button {
-            background: #1e293b; color: var(--text); border: 1px solid #334155;
-            padding: 8px 12px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; outline: none;
+            background: rgba(30, 41, 59, 0.85);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 8px 13px;
+            border-radius: 10px;
+            font-size: 0.86rem;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.18s ease;
         }
-        select:focus, button:hover { border-color: var(--accent); box-shadow: 0 0 8px var(--accent-glow); }
+        select:hover, button:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 12px var(--accent-soft);
+        }
+        .continue-btn {
+            background: rgba(16, 185, 129, 0.16);
+            border-color: rgba(16, 185, 129, 0.45);
+            color: #6ee7b7;
+            font-weight: 600;
+        }
+        .continue-btn:hover {
+            background: rgba(16, 185, 129, 0.28);
+        }
 
-        /* Devices Bar */
+        /* Telemetry Strip */
         .telemetry-bar {
-            background: #0b1120; border-bottom: 1px solid var(--border);
-            padding: 8px 20px; display: flex; gap: 15px; overflow-x: auto; font-size: 0.8rem;
+            background: rgba(8, 13, 24, 0.9);
+            border-bottom: 1px solid var(--border);
+            padding: 9px 22px;
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            align-items: center;
         }
         .device-pill {
-            background: var(--panel); border: 1px solid var(--border); padding: 4px 12px;
-            border-radius: 20px; display: flex; align-items: center; gap: 8px; white-space: nowrap;
+            background: var(--panel-solid);
+            border: 1px solid var(--border);
+            padding: 5px 13px;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.78rem;
+            white-space: nowrap;
         }
-        .dot-online { width: 7px; height: 7px; border-radius: 50%; background: #10b981; }
-        .dot-standby { width: 7px; height: 7px; border-radius: 50%; background: #f59e0b; }
+        .dot-online { width: 7px; height: 7px; border-radius: 50%; background: var(--success); box-shadow: 0 0 6px var(--success); }
+        .dot-standby { width: 7px; height: 7px; border-radius: 50%; background: var(--warn); }
 
-        /* Chat Area */
-        #chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
-        .msg { max-width: 85%; padding: 14px 18px; border-radius: 14px; line-height: 1.6; font-size: 0.95rem; position: relative; }
-        .msg.user { align-self: flex-end; background: #1d4ed8; color: #fff; border-bottom-right-radius: 2px; }
-        .msg.ai { align-self: flex-start; background: var(--panel); border: 1px solid var(--border); border-bottom-left-radius: 2px; width: 85%; }
-        .msg-meta { font-size: 0.75rem; color: var(--accent); margin-bottom: 6px; display: flex; justify-content: space-between; gap: 12px; }
+        /* Chat Stream */
+        #chat-box {
+            flex: 1;
+            overflow-y: auto;
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            scroll-behavior: smooth;
+        }
+        #chat-box::-webkit-scrollbar { width: 7px; }
+        #chat-box::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 999px; }
 
-        /* Code blocks */
-        pre { direction: ltr; text-align: left; background: #090d16 !important; padding: 12px; border-radius: 8px; overflow-x: auto; margin: 10px 0; border: 1px solid #1e293b; position: relative; }
-        code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.88rem; }
+        .msg {
+            max-width: min(860px, 92%);
+            padding: 15px 18px;
+            border-radius: 16px;
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+        .msg.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #fff;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 8px 24px rgba(29, 78, 216, 0.25);
+        }
+        .msg.ai {
+            align-self: flex-start;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 4px;
+            width: min(860px, 92%);
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+        }
+        .msg-meta {
+            font-size: 0.74rem;
+            color: var(--accent);
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            direction: ltr;
+        }
+
+        /* Auto-directional Markdown & Tables */
+        .md-content { unicode-bidi: plaintext; }
+        .md-content h1, .md-content h2, .md-content h3 {
+            color: #f8fafc;
+            margin: 14px 0 8px;
+            font-weight: 700;
+        }
+        .md-content p { margin: 8px 0; }
+        .md-content ul, .md-content ol { padding-inline-start: 22px; margin: 8px 0; }
+        .md-content li { margin: 4px 0; }
+        .md-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 0.86rem;
+            background: rgba(7, 11, 20, 0.75);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .md-content th, .md-content td {
+            border: 1px solid var(--border);
+            padding: 9px 12px;
+            text-align: start;
+        }
+        .md-content th {
+            background: rgba(0, 240, 255, 0.08);
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .md-content :not(pre) > code {
+            background: rgba(30, 41, 59, 0.9);
+            color: #7dd3fc;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-family: 'Cascadia Code', 'Consolas', monospace;
+            font-size: 0.86em;
+            direction: ltr;
+            unicode-bidi: isolate;
+        }
+
+        /* Code Blocks */
+        pre {
+            direction: ltr;
+            text-align: left;
+            background: #060911 !important;
+            padding: 14px;
+            padding-top: 38px;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin: 12px 0;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            position: relative;
+        }
+        pre code { font-family: 'Cascadia Code', 'Consolas', monospace; font-size: 0.87rem; }
         .copy-btn {
-            position: absolute; top: 8px; right: 8px; background: #1e293b; color: var(--accent);
-            border: 1px solid var(--accent); padding: 3px 8px; font-size: 0.75rem; border-radius: 5px;
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(15, 23, 42, 0.95);
+            color: var(--accent);
+            border: 1px solid rgba(0, 240, 255, 0.35);
+            padding: 4px 10px;
+            font-size: 0.74rem;
+            border-radius: 7px;
         }
 
-        /* Input Area */
+        /* Quick Prompts */
+        .quick-bar {
+            padding: 0 22px 10px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .chip {
+            background: rgba(15, 23, 42, 0.75);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            padding: 5px 11px;
+            border-radius: 999px;
+            font-size: 0.76rem;
+        }
+        .chip:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        /* Composer */
         .input-area {
-            background: var(--panel); border-top: 1px solid var(--border);
-            padding: 12px 20px; display: flex; gap: 10px; align-items: flex-end;
+            background: var(--panel);
+            backdrop-filter: blur(12px);
+            border-top: 1px solid var(--border);
+            padding: 12px 22px 16px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
         }
         textarea {
-            flex: 1; background: #070b14; color: var(--text); border: 1px solid #334155;
-            border-radius: 10px; padding: 12px; resize: none; height: 52px; max-height: 150px;
-            font-size: 0.95rem; outline: none;
+            flex: 1;
+            background: #060a14;
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 14px;
+            resize: none;
+            min-height: 50px;
+            max-height: 160px;
+            font-size: 0.94rem;
+            line-height: 1.5;
+            outline: none;
+            unicode-bidi: plaintext;
         }
-        textarea:focus { border-color: var(--accent); }
-        .send-btn { background: var(--accent); color: #000; font-weight: bold; border: none; padding: 14px 20px; }
-        .continue-btn { background: #10b981; color: #000; font-weight: bold; border: none; }
+        textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+        .send-btn {
+            background: var(--accent);
+            color: #041018;
+            font-weight: 700;
+            border: none;
+            padding: 13px 20px;
+            border-radius: 12px;
+        }
+        .send-btn:hover { filter: brightness(1.08); }
     </style>
 </head>
 <body>
 
 <header>
-    <div class="brand"><div class="pulse"></div> J.A.R.V.I.S. CLOUD v2.0</div>
+    <div class="brand">
+        <div class="pulse"></div>
+        <span>J.A.R.V.I.S. CLOUD</span>
+        <span class="ver-badge">v2.1 DECK</span>
+    </div>
     <div class="controls">
-        <select id="model-select">
+        <select id="model-select" title="Select AI Routing Mode">
             {% for key, m in models.items() %}
             <option value="{{ key }}">{{ m.name }}</option>
             {% endfor %}
         </select>
         <button class="continue-btn" onclick="continueCode()" title="Continue generating if code cut off">⏩ Continue Code</button>
-        <button onclick="clearChat()">🗑️ Clear</button>
+        <button onclick="clearChat()" title="Clear chat history">🗑️ Clear</button>
     </div>
 </header>
 
 <div class="telemetry-bar" id="telemetry-bar">
-    <div class="device-pill"><span class="dot-online"></span> Loading device status...</div>
+    <div class="device-pill"><span class="dot-online"></span> Syncing device telemetry...</div>
 </div>
 
 <div id="chat-box">
     <div class="msg ai">
-        <div class="msg-meta"><span>J.A.R.V.I.S. System</span><span>Online</span></div>
-        Welcome back! Cloud server is online and ready. Pick a model above (or keep <b>Auto-Router</b>) and tell me what we're building.
+        <div class="msg-meta"><span>J.A.R.V.I.S. CORE</span><span>ONLINE</span></div>
+        <div class="md-content">
+            Command deck online and ready. Select a model or keep <strong>Auto-Router</strong> enabled — send a task, architecture question, or full code request.
+        </div>
     </div>
 </div>
 
+<div class="quick-bar">
+    <button class="chip" onclick="sendMessage('اكتبلي سكربت Python ينظف ملف CSV بـ pandas ويرتب الأعمدة')">🧹 Pandas Cleaner</button>
+    <button class="chip" onclick="sendMessage('صمملي مخطط FastAPI بسيط مع endpoint للفحص والرسائل')">⚙️ FastAPI Starter</button>
+    <button class="chip" onclick="sendMessage('Summarize your capabilities clearly in structured points')">📋 Capabilities</button>
+</div>
+
 <div class="input-area">
-    <textarea id="prompt-input" placeholder="Type your command or request a full project... (Shift+Enter for new line)"></textarea>
+    <textarea id="prompt-input" rows="1" placeholder="Type a command, question, or full project spec... (Enter to send, Shift+Enter for new line)"></textarea>
     <button class="send-btn" onclick="sendMessage()">Send ⚡</button>
 </div>
 
@@ -112,6 +352,10 @@
     let chatHistory = [];
     const chatBox = document.getElementById("chat-box");
     const promptInput = document.getElementById("prompt-input");
+
+    function hasArabic(text) {
+        return /[\u0600-\u06FF]/.test(text || "");
+    }
 
     async function fetchTelemetry() {
         try {
@@ -124,7 +368,12 @@
                 bar.innerHTML += `
                     <div class="device-pill">
                         <span class="${dotClass}"></span>
-                        <b>${device}:</b> 🔋 ${info.battery} | 📶 ${info.network} (${info.last_seen})
+                        <strong>${device}</strong>
+                        <span>🔋 ${info.battery}</span>
+                        <span>•</span>
+                        <span>📶 ${info.network}</span>
+                        <span>•</span>
+                        <span>${info.last_seen}</span>
                     </div>`;
             }
         } catch (e) {}
@@ -135,21 +384,29 @@
     function appendMessage(role, content, meta = "") {
         const div = document.createElement("div");
         div.className = `msg ${role}`;
+        const isAr = hasArabic(content);
+
         if (role === "ai") {
-            div.innerHTML = `<div class="msg-meta"><span>${meta}</span></div><div class="md-content">${marked.parse(content)}</div>`;
+            div.innerHTML = `
+                <div class="msg-meta"><span>${meta}</span></div>
+                <div class="md-content" dir="${isAr ? "rtl" : "ltr"}" style="text-align: ${isAr ? "right" : "left"};">${marked.parse(content)}</div>
+            `;
             div.querySelectorAll("pre").forEach(pre => {
-                hljs.highlightElement(pre.querySelector("code"));
+                const codeEl = pre.querySelector("code");
+                if (codeEl) hljs.highlightElement(codeEl);
                 const btn = document.createElement("button");
                 btn.className = "copy-btn";
                 btn.innerText = "Copy Code";
                 btn.onclick = () => {
-                    navigator.clipboard.writeText(pre.querySelector("code").innerText);
+                    navigator.clipboard.writeText(codeEl ? codeEl.innerText : pre.innerText);
                     btn.innerText = "Copied ✓";
-                    setTimeout(() => btn.innerText = "Copy Code", 2000);
+                    setTimeout(() => btn.innerText = "Copy Code", 1800);
                 };
                 pre.appendChild(btn);
             });
         } else {
+            div.setAttribute("dir", isAr ? "rtl" : "ltr");
+            div.style.textAlign = isAr ? "right" : "left";
             div.innerText = content;
         }
         chatBox.appendChild(div);
@@ -158,12 +415,15 @@
     }
 
     async function sendMessage(customText = null) {
-        const text = customText || promptInput.value.trim();
+        const text = (customText !== null ? customText : promptInput.value).trim();
         if (!text) return;
 
-        if (!customText) promptInput.value = "";
+        if (customText === null) {
+            promptInput.value = "";
+            promptInput.style.height = "50px";
+        }
         appendMessage("user", text);
-        const loadingDiv = appendMessage("ai", "⏳ Processing on cloud...", "J.A.R.V.I.S. Thinking");
+        const loadingDiv = appendMessage("ai", "⏳ Routing request across cloud models...", "J.A.R.V.I.S. Thinking");
 
         const model = document.getElementById("model-select").value;
         try {
@@ -196,6 +456,11 @@
         chatHistory = [];
         chatBox.innerHTML = "";
     }
+
+    promptInput.addEventListener("input", () => {
+        promptInput.style.height = "50px";
+        promptInput.style.height = Math.min(promptInput.scrollHeight, 160) + "px";
+    });
 
     promptInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
